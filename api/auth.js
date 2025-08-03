@@ -3,42 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
 
-// Fallback in-memory storage for development/testing
-let inMemoryUsers = [];
-let userIdCounter = 1;
-
-// Check if we're in fallback mode (missing environment variables)
-function isFallbackMode() {
-  return !process.env.MONGODB_URI || !process.env.JWT_SECRET;
-}
-
-// Fallback user operations
-function createFallbackUser(userData) {
-  const user = {
-    _id: userIdCounter++,
-    ...userData,
-    createdAt: new Date(),
-    lastLogin: null
-  };
-  inMemoryUsers.push(user);
-  return user;
-}
-
-function findFallbackUser(email) {
-  return inMemoryUsers.find(user => user.email === email);
-}
-
-// Generate a simple token for fallback mode
-function generateFallbackToken(user) {
-  const payload = {
-    userId: user._id,
-    email: user.email,
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
-  };
-  return Buffer.from(JSON.stringify(payload)).toString('base64');
-}
-
 // CORS helper
 function setCorsHeaders(res) {
   const allowedOrigins = [
@@ -61,68 +25,10 @@ async function handleRegister(req, res) {
   try {
     const { name, email, password } = req.body;
 
-    // Validate input
-    if (!name || !email || !password) {
-      return res.status(400).json({ 
-        error: { 
-          code: '400', 
-          message: 'Name, email, and password are required' 
-        } 
-      });
-    }
-
-    // Check if we're in fallback mode
-    if (isFallbackMode()) {
-      console.log('🔄 Running in fallback mode (missing environment variables)');
-      
-      // Check if user already exists in memory
-      const existingUser = findFallbackUser(email);
-      if (existingUser) {
-        return res.status(400).json({ 
-          error: { 
-            code: '400', 
-            message: 'User already exists' 
-          } 
-        });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
-
-      // Create user in memory
-      const user = createFallbackUser({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'user'
-      });
-
-      // Generate fallback token
-      const token = generateFallbackToken(user);
-
-      return res.status(201).json({
-        message: 'User created successfully (fallback mode)',
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        },
-        warning: 'Running in fallback mode. Please configure MONGODB_URI and JWT_SECRET for production.'
-      });
-    }
-
-    // Normal database mode
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ 
-        error: { 
-          code: '400', 
-          message: 'User already exists' 
-        } 
-      });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Hash password
@@ -137,6 +43,16 @@ async function handleRegister(req, res) {
     });
 
     await user.save();
+
+    // Check if JWT_SECRET exists
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ 
+        error: { 
+          code: '500', 
+          message: 'JWT_SECRET not configured. Please add JWT_SECRET to Vercel environment variables.' 
+        } 
+      });
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -171,82 +87,16 @@ async function handleLogin(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ 
-        error: { 
-          code: '400', 
-          message: 'Email and password are required' 
-        } 
-      });
-    }
-
-    // Check if we're in fallback mode
-    if (isFallbackMode()) {
-      console.log('🔄 Running in fallback mode (missing environment variables)');
-      
-      // Find user in memory
-      const user = findFallbackUser(email);
-      if (!user) {
-        return res.status(400).json({ 
-          error: { 
-            code: '400', 
-            message: 'Invalid credentials' 
-          } 
-        });
-      }
-
-      // Check password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ 
-          error: { 
-            code: '400', 
-            message: 'Invalid credentials' 
-          } 
-        });
-      }
-
-      // Update last login in memory
-      user.lastLogin = new Date();
-
-      // Generate fallback token
-      const token = generateFallbackToken(user);
-
-      return res.json({
-        message: 'Login successful (fallback mode)',
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        },
-        warning: 'Running in fallback mode. Please configure MONGODB_URI and JWT_SECRET for production.'
-      });
-    }
-
-    // Normal database mode
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ 
-        error: { 
-          code: '400', 
-          message: 'Invalid credentials' 
-        } 
-      });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ 
-        error: { 
-          code: '400', 
-          message: 'Invalid credentials' 
-        } 
-      });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Update last login
@@ -272,12 +122,7 @@ async function handleLogin(req, res) {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
-      error: { 
-        code: '500', 
-        message: 'Server error during login' 
-      } 
-    });
+    res.status(500).json({ message: 'Server error during login' });
   }
 }
 
@@ -291,21 +136,17 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Connect to database only if not in fallback mode
-  if (!isFallbackMode()) {
-    try {
-      await connectDB();
-    } catch (error) {
-      console.error('Database connection error:', error);
-      return res.status(500).json({ 
-        error: { 
-          code: '500', 
-          message: 'Database connection failed. Please add MONGODB_URI to Vercel environment variables.' 
-        } 
-      });
-    }
-  } else {
-    console.log('⚠️  Running in fallback mode - skipping database connection');
+  // Connect to database
+  try {
+    await connectDB();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return res.status(500).json({ 
+      error: { 
+        code: '500', 
+        message: 'Database connection failed. Please add MONGODB_URI to Vercel environment variables.' 
+      } 
+    });
   }
 
   // Route based on URL path and method
