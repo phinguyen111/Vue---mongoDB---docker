@@ -44,6 +44,16 @@ async function handleRegister(req, res) {
 
     await user.save();
 
+    // Check if JWT_SECRET exists
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ 
+        error: { 
+          code: '500', 
+          message: 'JWT_SECRET not configured. Please add JWT_SECRET to Vercel environment variables.' 
+        } 
+      });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
@@ -63,7 +73,12 @@ async function handleRegister(req, res) {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    res.status(500).json({ 
+      error: { 
+        code: '500', 
+        message: 'A server error has occurred during registration' 
+      } 
+    });
   }
 }
 
@@ -122,7 +137,17 @@ module.exports = async function handler(req, res) {
   }
 
   // Connect to database
-  await connectDB();
+  try {
+    await connectDB();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return res.status(500).json({ 
+      error: { 
+        code: '500', 
+        message: 'Database connection failed. Please add MONGODB_URI to Vercel environment variables.' 
+      } 
+    });
+  }
 
   // Route based on URL path and method
   const { url, method } = req;
