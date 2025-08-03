@@ -203,25 +203,7 @@
                         </small>
                       </div>
 
-                      <div class="filter-actions">
-                        <button type="button" 
-                                class="action-btn reset-btn" 
-                                @click="clearFilters"
-                                :disabled="!hasActiveFilters"
-                                aria-label="Đặt lại tất cả bộ lọc">
-                          <i class="fas fa-refresh" aria-hidden="true"></i>
-                          <span>Đặt lại</span>
-                        </button>
-                        
-                        <button type="button" 
-                                class="action-btn save-search-btn" 
-                                @click="saveCurrentSearch"
-                                :disabled="!searchQuery && !hasActiveFilters"
-                                aria-label="Lưu tìm kiếm hiện tại">
-                          <i class="fas fa-bookmark" aria-hidden="true"></i>
-                          <span>Lưu tìm kiếm</span>
-                        </button>
-                      </div>
+
                     </div>
                   </div>
                 </div>
@@ -889,22 +871,7 @@ export default {
       return labels[sortBy] || sortBy;
     },
     
-    saveCurrentSearch() {
-      const searchData = {
-        query: this.searchQuery,
-        category: this.selectedCategory,
-        year: this.selectedYear,
-        sortBy: this.sortBy,
-        timestamp: Date.now()
-      };
-      
-      const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
-      savedSearches.unshift(searchData);
-      if (savedSearches.length > 5) savedSearches.pop();
-      localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
-      
-      this.showToast('Đã lưu tìm kiếm', 'success');
-    },
+
     
     handlePageSizeChange() {
       this.currentPage = 1;
@@ -1487,86 +1454,7 @@ export default {
   font-size: 0.625rem;
 }
 
-.filter-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #f3f4f6;
-}
 
-.action-btn {
-  padding: 0.875rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-  min-width: 120px;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.reset-btn {
-  background: #ffffff;
-  color: #000000;
-  border: 2px solid #e5e7eb;
-}
-
-.reset-btn:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #374151;
-}
-
-.reset-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.save-search-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: #ffffff;
-  border: 2px solid transparent;
-}
-
-.save-search-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-}
-
-.save-search-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  background: #9ca3af;
-}
-
-.action-btn i {
-  font-size: 0.875rem;
-}
-
-.action-btn span {
-  font-weight: 600;
-}
 
 /* Enhanced Search Results Summary */
 .search-results-summary {

@@ -1,29 +1,16 @@
-const express = require('express');
 const Book = require('../server/models/BookModel');
 const connectDB = require('../server/config/database');
 const auth = require('../server/middleware/auth');
 
-// Connect to database
-connectDB();
-
-const app = express();
-app.use(express.json());
-
-// CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// CORS helper function
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+}
 
 // Get all books with search, filter, and pagination
-app.get('/api/books', async (req, res) => {
+async function getAllBooks(req, res) {
   try {
     const {
       search,
@@ -92,10 +79,10 @@ app.get('/api/books', async (req, res) => {
     console.error('Error fetching books:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Get book by ID
-app.get('/api/books/:id', async (req, res) => {
+async function getBookById(req, res) {
   try {
     const book = await Book.findById(req.params.id)
       .populate('reviews.user', 'name');
@@ -113,10 +100,10 @@ app.get('/api/books/:id', async (req, res) => {
     console.error('Error fetching book:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Add new book (admin only)
-app.post('/api/books', auth, async (req, res) => {
+async function createBook(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -129,10 +116,10 @@ app.post('/api/books', auth, async (req, res) => {
     console.error('Error creating book:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Update book (admin only)
-app.put('/api/books/:id', auth, async (req, res) => {
+async function updateBook(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -153,10 +140,10 @@ app.put('/api/books/:id', auth, async (req, res) => {
     console.error('Error updating book:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Delete book (admin only)
-app.delete('/api/books/:id', auth, async (req, res) => {
+async function deleteBook(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -177,7 +164,39 @@ app.delete('/api/books/:id', auth, async (req, res) => {
     console.error('Error deleting book:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
-// Export for Vercel
-module.exports = app;
+// Main handler for Vercel
+export default async function handler(req, res) {
+  // Set CORS headers
+  setCorsHeaders(res);
+  
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Connect to database
+  await connectDB();
+
+  const { url, method } = req;
+  const bookIdMatch = url.match(/\/api\/books\/([^/]+)$/);
+  
+  if (url === '/api/books' && method === 'GET') {
+    return getAllBooks(req, res);
+  } else if (url === '/api/books' && method === 'POST') {
+    // Apply auth middleware for admin operations
+    return auth(req, res, () => createBook(req, res));
+  } else if (bookIdMatch && method === 'GET') {
+    req.params = { id: bookIdMatch[1] };
+    return getBookById(req, res);
+  } else if (bookIdMatch && method === 'PUT') {
+    req.params = { id: bookIdMatch[1] };
+    return auth(req, res, () => updateBook(req, res));
+  } else if (bookIdMatch && method === 'DELETE') {
+    req.params = { id: bookIdMatch[1] };
+    return auth(req, res, () => deleteBook(req, res));
+  } else {
+    return res.status(404).json({ message: 'Not found' });
+  }
+}

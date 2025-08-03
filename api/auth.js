@@ -1,30 +1,17 @@
-const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
 
-// Connect to database
-connectDB();
+// CORS helper
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+}
 
-const app = express();
-app.use(express.json());
-
-// CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
-
-// Register endpoint
-app.post('/api/auth/register', async (req, res) => {
+// Register function
+async function handleRegister(req, res) {
   try {
     const { name, email, password } = req.body;
 
@@ -68,10 +55,10 @@ app.post('/api/auth/register', async (req, res) => {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error during registration' });
   }
-});
+}
 
-// Login endpoint
-app.post('/api/auth/login', async (req, res) => {
+// Login function
+async function handleLogin(req, res) {
   try {
     const { email, password } = req.body;
 
@@ -112,7 +99,29 @@ app.post('/api/auth/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
   }
-});
+}
 
-// Export for Vercel
-module.exports = app;
+// Main handler for Vercel
+export default async function handler(req, res) {
+  // Set CORS headers
+  setCorsHeaders(res);
+  
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Connect to database
+  await connectDB();
+
+  // Route based on URL path and method
+  const { url, method } = req;
+  
+  if (url.includes('/register') && method === 'POST') {
+    return handleRegister(req, res);
+  } else if (url.includes('/login') && method === 'POST') {
+    return handleLogin(req, res);
+  } else {
+    return res.status(404).json({ message: 'Not found' });
+  }
+}

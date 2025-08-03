@@ -1,29 +1,16 @@
-const express = require('express');
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
 const auth = require('../server/middleware/auth');
 
-// Connect to database
-connectDB();
-
-const app = express();
-app.use(express.json());
-
-// CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// CORS helper function
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+}
 
 // Get current user profile
-app.get('/api/users/profile', auth, async (req, res) => {
+async function getUserProfile(req, res) {
   try {
     const user = await User.findById(req.user.userId)
       .select('-password')
@@ -39,10 +26,10 @@ app.get('/api/users/profile', auth, async (req, res) => {
     console.error('Error fetching user profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Update user profile
-app.put('/api/users/profile', auth, async (req, res) => {
+async function updateUserProfile(req, res) {
   try {
     const { name, email } = req.body;
     
@@ -61,10 +48,10 @@ app.put('/api/users/profile', auth, async (req, res) => {
     console.error('Error updating user profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Get all users (admin only)
-app.get('/api/users', auth, async (req, res) => {
+async function getAllUsers(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -130,10 +117,10 @@ app.get('/api/users', auth, async (req, res) => {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Get user by ID (admin only)
-app.get('/api/users/:id', auth, async (req, res) => {
+async function getUserById(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -153,10 +140,10 @@ app.get('/api/users/:id', auth, async (req, res) => {
     console.error('Error fetching user:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Update user (admin only)
-app.put('/api/users/:id', auth, async (req, res) => {
+async function updateUser(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -177,10 +164,10 @@ app.put('/api/users/:id', auth, async (req, res) => {
     console.error('Error updating user:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Delete user (admin only)
-app.delete('/api/users/:id', auth, async (req, res) => {
+async function deleteUser(req, res) {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -201,10 +188,10 @@ app.delete('/api/users/:id', auth, async (req, res) => {
     console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Add book to favorites
-app.post('/api/users/favorites/:bookId', auth, async (req, res) => {
+async function addToFavorites(req, res) {
   try {
     const user = await User.findById(req.user.userId);
     
@@ -218,10 +205,10 @@ app.post('/api/users/favorites/:bookId', auth, async (req, res) => {
     console.error('Error adding to favorites:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
 // Remove book from favorites
-app.delete('/api/users/favorites/:bookId', auth, async (req, res) => {
+async function removeFromFavorites(req, res) {
   try {
     const user = await User.findById(req.user.userId);
     
@@ -235,7 +222,47 @@ app.delete('/api/users/favorites/:bookId', auth, async (req, res) => {
     console.error('Error removing from favorites:', error);
     res.status(500).json({ message: 'Server error' });
   }
-});
+}
 
-// Export for Vercel
-module.exports = app;
+// Main handler for Vercel
+export default async function handler(req, res) {
+  // Set CORS headers
+  setCorsHeaders(res);
+  
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Connect to database
+  await connectDB();
+
+  const { url, method } = req;
+  const userIdMatch = url.match(/\/api\/users\/([^/]+)$/);
+  const favoritesMatch = url.match(/\/api\/users\/favorites\/([^/]+)$/);
+  
+  if (url === '/api/users/profile' && method === 'GET') {
+    return auth(req, res, () => getUserProfile(req, res));
+  } else if (url === '/api/users/profile' && method === 'PUT') {
+    return auth(req, res, () => updateUserProfile(req, res));
+  } else if (url === '/api/users' && method === 'GET') {
+    return auth(req, res, () => getAllUsers(req, res));
+  } else if (userIdMatch && method === 'GET') {
+    req.params = { id: userIdMatch[1] };
+    return auth(req, res, () => getUserById(req, res));
+  } else if (userIdMatch && method === 'PUT') {
+    req.params = { id: userIdMatch[1] };
+    return auth(req, res, () => updateUser(req, res));
+  } else if (userIdMatch && method === 'DELETE') {
+    req.params = { id: userIdMatch[1] };
+    return auth(req, res, () => deleteUser(req, res));
+  } else if (favoritesMatch && method === 'POST') {
+    req.params = { bookId: favoritesMatch[1] };
+    return auth(req, res, () => addToFavorites(req, res));
+  } else if (favoritesMatch && method === 'DELETE') {
+    req.params = { bookId: favoritesMatch[1] };
+    return auth(req, res, () => removeFromFavorites(req, res));
+  } else {
+    return res.status(404).json({ message: 'Not found' });
+  }
+}
