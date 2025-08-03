@@ -127,11 +127,22 @@ module.exports = async function handler(req, res) {
   // Route based on URL path and method
   const { url, method } = req;
   
-  if (url.includes('/register') && method === 'POST') {
+  // Extract the action from query parameter or URL
+  const urlObj = new URL(url, `http://${req.headers.host}`);
+  const action = urlObj.searchParams.get('action') || urlObj.pathname.split('/').pop();
+  
+  if ((action === 'register' || url.includes('/register')) && method === 'POST') {
     return handleRegister(req, res);
-  } else if (url.includes('/login') && method === 'POST') {
+  } else if ((action === 'login' || url.includes('/login')) && method === 'POST') {
+    return handleLogin(req, res);
+  } else if (method === 'POST' && !action) {
+    // Default to login if no action specified
     return handleLogin(req, res);
   } else {
-    return res.status(404).json({ message: 'Not found' });
+    return res.status(405).json({ 
+      message: 'Method not allowed',
+      allowedMethods: ['POST'],
+      availableActions: ['login', 'register']
+    });
   }
 }

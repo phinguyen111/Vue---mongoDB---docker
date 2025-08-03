@@ -1,6 +1,6 @@
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
-const auth = require('../server/middleware/auth');
+const { authMiddleware } = require('../server/middleware/auth');
 
 // CORS helper
 function setCorsHeaders(res) {
@@ -248,31 +248,60 @@ module.exports = async function handler(req, res) {
   await connectDB();
 
   const { url, method } = req;
-  const userIdMatch = url.match(/\/api\/users\/([^/]+)$/);
-  const favoritesMatch = url.match(/\/api\/users\/favorites\/([^/]+)$/);
   
-  if (url === '/api/users/profile' && method === 'GET') {
-    return auth(req, res, () => getUserProfile(req, res));
-  } else if (url === '/api/users/profile' && method === 'PUT') {
-    return auth(req, res, () => updateUserProfile(req, res));
-  } else if (url === '/api/users' && method === 'GET') {
-    return auth(req, res, () => getAllUsers(req, res));
+  // Parse URL to handle both /api/users and direct /users patterns
+  const urlPath = url.replace(/^.*\/api/, '') || url;
+  const userIdMatch = urlPath.match(/^\/users\/([^/?]+)$/) || url.match(/\/users\/([^/?]+)$/);
+  const favoritesMatch = urlPath.match(/^\/users\/favorites\/([^/?]+)$/) || url.match(/\/users\/favorites\/([^/?]+)$/);
+  const isProfile = urlPath.includes('/profile') || url.includes('/profile');
+  const isRootUsers = (urlPath === '/users' || url.includes('/api/users')) && !userIdMatch && !favoritesMatch && !isProfile;
+  
+  if (isProfile && method === 'GET') {
+    return authMiddleware(req, res, () => getUserProfile(req, res));
+  } else if (isProfile && method === 'PUT') {
+    return authMiddleware(req, res, () => updateUserProfile(req, res));
+  } else if (isRootUsers && method === 'GET') {
+    return authMiddleware(req, res, () => getAllUsers(req, res));
   } else if (userIdMatch && method === 'GET') {
     req.params = { id: userIdMatch[1] };
-    return auth(req, res, () => getUserById(req, res));
+    return authMiddleware(req, res, () => getUserById(req, res));
   } else if (userIdMatch && method === 'PUT') {
     req.params = { id: userIdMatch[1] };
-    return auth(req, res, () => updateUser(req, res));
+    return authMiddleware(req, res, () => updateUser(req, res));
   } else if (userIdMatch && method === 'DELETE') {
     req.params = { id: userIdMatch[1] };
-    return auth(req, res, () => deleteUser(req, res));
+    return authMiddleware(req, res, () => deleteUser(req, res));
   } else if (favoritesMatch && method === 'POST') {
     req.params = { bookId: favoritesMatch[1] };
-    return auth(req, res, () => addToFavorites(req, res));
+    return authMiddleware(req, res, () => addToFavorites(req, res));
   } else if (favoritesMatch && method === 'DELETE') {
     req.params = { bookId: favoritesMatch[1] };
-    return auth(req, res, () => removeFromFavorites(req, res));
+    return authMiddleware(req, res, () => removeFromFavorites(req, res));
+  } else if (isProfile || isRootUsers || userIdMatch || favoritesMatch) {
+    // Valid endpoint but wrong method
+    let allowedMethods = [];
+    let endpoint = '';
+    
+    if (isProfile) {
+      allowedMethods = ['GET', 'PUT'];
+      endpoint = '/api/users/profile';
+    } else if (isRootUsers) {
+      allowedMethods = ['GET'];
+      endpoint = '/api/users';
+    } else if (userIdMatch) {
+      allowedMethods = ['GET', 'PUT', 'DELETE'];
+      endpoint = `/api/users/${userIdMatch[1]}`;
+    } else if (favoritesMatch) {
+      allowedMethods = ['POST', 'DELETE'];
+      endpoint = `/api/users/favorites/${favoritesMatch[1]}`;
+    }
+    
+    return res.status(405).json({ 
+      message: 'Method not allowed',
+      allowedMethods,
+      endpoint
+    });
   } else {
-    return res.status(404).json({ message: 'Not found' });
+    return res.status(404).json({ message: 'Endpoint not found' });
   }
 }

@@ -1,6 +1,6 @@
 const Book = require('../server/models/BookModel');
 const connectDB = require('../server/config/database');
-const auth = require('../server/middleware/auth');
+const { authMiddleware } = require('../server/middleware/auth');
 
 // CORS helper
 function setCorsHeaders(res) {
@@ -190,23 +190,35 @@ module.exports = async function handler(req, res) {
   await connectDB();
 
   const { url, method } = req;
-  const bookIdMatch = url.match(/\/api\/books\/([^/]+)$/);
   
-  if (url === '/api/books' && method === 'GET') {
+  // Parse URL to handle both /api/books and direct /books patterns
+  const urlPath = url.replace(/^.*\/api/, '') || url;
+  const bookIdMatch = urlPath.match(/^\/books\/([^/?]+)/) || url.match(/\/books\/([^/?]+)/);
+  const isRootBooks = urlPath === '/books' || url.includes('/api/books') && !bookIdMatch;
+  
+  if (isRootBooks && method === 'GET') {
     return getAllBooks(req, res);
-  } else if (url === '/api/books' && method === 'POST') {
+  } else if (isRootBooks && method === 'POST') {
     // Apply auth middleware for admin operations
-    return auth(req, res, () => createBook(req, res));
+    return authMiddleware(req, res, () => createBook(req, res));
   } else if (bookIdMatch && method === 'GET') {
     req.params = { id: bookIdMatch[1] };
     return getBookById(req, res);
   } else if (bookIdMatch && method === 'PUT') {
     req.params = { id: bookIdMatch[1] };
-    return auth(req, res, () => updateBook(req, res));
+    return authMiddleware(req, res, () => updateBook(req, res));
   } else if (bookIdMatch && method === 'DELETE') {
     req.params = { id: bookIdMatch[1] };
-    return auth(req, res, () => deleteBook(req, res));
+    return authMiddleware(req, res, () => deleteBook(req, res));
+  } else if (isRootBooks || bookIdMatch) {
+    // Valid endpoint but wrong method
+    const allowedMethods = isRootBooks ? ['GET', 'POST'] : ['GET', 'PUT', 'DELETE'];
+    return res.status(405).json({ 
+      message: 'Method not allowed',
+      allowedMethods,
+      endpoint: isRootBooks ? '/api/books' : `/api/books/${bookIdMatch[1]}`
+    });
   } else {
-    return res.status(404).json({ message: 'Not found' });
+    return res.status(404).json({ message: 'Endpoint not found' });
   }
 }
