@@ -3,6 +3,27 @@ const jwt = require('jsonwebtoken');
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
 
+// Mock storage for development/testing when env vars are missing
+let mockUsers = [
+  {
+    _id: 'mock-user-1',
+    name: 'Test User',
+    email: 'test@example.com',
+    password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uO8G', // 'password123'
+    role: 'user',
+    createdAt: new Date(),
+    lastLogin: null
+  }
+];
+
+// Mock JWT secret for development
+const MOCK_JWT_SECRET = 'mock-jwt-secret-for-development-only';
+
+// Check if we're in mock mode (missing environment variables)
+function isMockMode() {
+  return !process.env.MONGODB_URI || !process.env.JWT_SECRET;
+}
+
 // CORS helper
 function setCorsHeaders(res) {
   const allowedOrigins = [
@@ -25,10 +46,77 @@ async function handleRegister(req, res) {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({ 
+        error: { 
+          code: '400', 
+          message: 'Name, email, and password are required' 
+        } 
+      });
+    }
+
+    if (isMockMode()) {
+      // Mock mode - use in-memory storage
+      console.log('🔧 Running in MOCK MODE - using in-memory storage');
+      
+      // Check if user already exists in mock storage
+      const existingUser = mockUsers.find(u => u.email === email);
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: { 
+            code: '400', 
+            message: 'User already exists' 
+          } 
+        });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create new mock user
+      const newUser = {
+        _id: `mock-user-${Date.now()}`,
+        name,
+        email,
+        password: hashedPassword,
+        role: 'user',
+        createdAt: new Date(),
+        lastLogin: null
+      };
+
+      // Add to mock storage
+      mockUsers.push(newUser);
+
+      // Generate JWT token with mock secret
+      const token = jwt.sign(
+        { userId: newUser._id, email: newUser.email, role: newUser.role },
+        MOCK_JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      return res.status(201).json({
+        message: 'User created successfully (MOCK MODE)',
+        token,
+        user: {
+          id: newUser._id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        },
+        warning: 'This is running in mock mode. Please configure MONGODB_URI and JWT_SECRET for production.'
+      });
+    }
+
+    // Production mode - use MongoDB
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ 
+        error: { 
+          code: '400', 
+          message: 'User already exists' 
+        } 
+      });
     }
 
     // Hash password
@@ -43,16 +131,6 @@ async function handleRegister(req, res) {
     });
 
     await user.save();
-
-    // Check if JWT_SECRET exists
-    if (!process.env.JWT_SECRET) {
-      return res.status(500).json({ 
-        error: { 
-          code: '500', 
-          message: 'JWT_SECRET not configured. Please add JWT_SECRET to Vercel environment variables.' 
-        } 
-      });
-    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -87,16 +165,85 @@ async function handleLogin(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Find user
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: { 
+          code: '400', 
+          message: 'Email and password are required' 
+        } 
+      });
+    }
+
+    if (isMockMode()) {
+      // Mock mode - use in-memory storage
+      console.log('🔧 Running in MOCK MODE - using in-memory storage');
+      
+      // Find user in mock storage
+      const user = mockUsers.find(u => u.email === email);
+      if (!user) {
+        return res.status(400).json({ 
+          error: { 
+            code: '400', 
+            message: 'Invalid credentials' 
+          } 
+        });
+      }
+
+      // Check password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ 
+          error: { 
+            code: '400', 
+            message: 'Invalid credentials' 
+          } 
+        });
+      }
+
+      // Update last login in mock storage
+      user.lastLogin = new Date();
+
+      // Generate JWT token with mock secret
+      const token = jwt.sign(
+        { userId: user._id, email: user.email, role: user.role },
+        MOCK_JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      return res.json({
+        message: 'Login successful (MOCK MODE)',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        },
+        warning: 'This is running in mock mode. Please configure MONGODB_URI and JWT_SECRET for production.'
+      });
+    }
+
+    // Production mode - use MongoDB
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ 
+        error: { 
+          code: '400', 
+          message: 'Invalid credentials' 
+        } 
+      });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ 
+        error: { 
+          code: '400', 
+          message: 'Invalid credentials' 
+        } 
+      });
     }
 
     // Update last login
@@ -122,7 +269,12 @@ async function handleLogin(req, res) {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+    res.status(500).json({ 
+      error: { 
+        code: '500', 
+        message: 'Server error during login' 
+      } 
+    });
   }
 }
 
@@ -136,17 +288,21 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Connect to database
-  try {
-    await connectDB();
-  } catch (error) {
-    console.error('Database connection error:', error);
-    return res.status(500).json({ 
-      error: { 
-        code: '500', 
-        message: 'Database connection failed. Please add MONGODB_URI to Vercel environment variables.' 
-      } 
-    });
+  // Connect to database only if not in mock mode
+  if (!isMockMode()) {
+    try {
+      await connectDB();
+    } catch (error) {
+      console.error('Database connection error:', error);
+      return res.status(500).json({ 
+        error: { 
+          code: '500', 
+          message: 'Database connection failed. Please add MONGODB_URI to Vercel environment variables.' 
+        } 
+      });
+    }
+  } else {
+    console.log('🔧 Skipping database connection - running in MOCK MODE');
   }
 
   // Route based on URL path and method
