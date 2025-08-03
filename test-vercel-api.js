@@ -3,9 +3,7 @@ const axios = require('axios');
 // Test script để kiểm tra API endpoints trên Vercel
 // Thử nhiều URL có thể có
 const POSSIBLE_URLS = [
-  'https://nheii.vercel.app/api',
-  'https://vue-mongo-db-docker.vercel.app/api',
-  'https://vue-mongo-db-docker-git-main-phinguyen111.vercel.app/api'
+  'https://vue-mongo-db-docker.vercel.app/api'
 ];
 
 let BASE_URL = POSSIBLE_URLS[0];

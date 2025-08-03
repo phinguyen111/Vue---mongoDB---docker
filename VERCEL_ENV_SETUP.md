@@ -1,5 +1,13 @@
 # Hướng dẫn thiết lập biến môi trường trên Vercel
 
+## 🚀 Tổng quan
+Sau khi deploy code lên Vercel, bạn cần thiết lập các biến môi trường để ứng dụng hoạt động đúng.
+
+## ✅ Trạng thái hiện tại
+- **Deployment URL:** `https://vue-mongo-db-docker.vercel.app`
+- **API Status:** ✅ Hoạt động
+- **Missing:** MongoDB URI và JWT Secret
+
 ## Các bước cần thực hiện:
 
 ### 1. Truy cập Vercel Dashboard
@@ -9,7 +17,7 @@
 
 ### 2. Thêm các biến môi trường sau:
 
-#### Database Configuration
+#### Database Configuration ⚠️ THIẾU
 ```
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/digital_library_prod
 ```
@@ -18,12 +26,20 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/digital_library_
 - Thay thế `username`, `password`, và `cluster` bằng thông tin thực tế
 - Whitelist IP `0.0.0.0/0` trong Network Access để Vercel có thể kết nối
 
-#### JWT Configuration
+#### JWT Configuration ⚠️ THIẾU
 ```
 JWT_SECRET=your-super-secure-jwt-secret-key-for-production-replace-this
 JWT_EXPIRES_IN=7d
 ```
 **Lưu ý:** Thay thế bằng JWT secret mạnh (ít nhất 32 ký tự ngẫu nhiên)
+
+#### Cách tạo JWT Secret:
+```bash
+# Sử dụng Node.js để tạo secret ngẫu nhiên
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Hoặc sử dụng online generator: [JWT Secret Generator](https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx)
 
 #### Node Environment
 ```

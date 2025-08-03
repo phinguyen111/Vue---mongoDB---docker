@@ -246,6 +246,29 @@ Authorization: Bearer <token>
 
 ## 🚀 Production Deployment
 
+### ✅ Vercel Deployment Status
+- **Live URL:** [https://vue-mongo-db-docker.vercel.app](https://vue-mongo-db-docker.vercel.app)
+- **API Status:** ✅ Hoạt động
+- **Missing:** MongoDB URI và JWT Secret
+
+### 🔧 Setup Environment Variables
+1. Run the secret generator:
+   ```bash
+   node generate-vercel-secrets.js
+   ```
+
+2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+3. Select project: `vue-mongo-db-docker`
+4. Go to Settings > Environment Variables
+5. Add the generated variables
+6. Redeploy the project
+
+**Environment Variables needed:**
+- `MONGODB_URI`: MongoDB Atlas connection string ⚠️ **MISSING**
+- `JWT_SECRET`: Generated secret key ⚠️ **MISSING**
+- `JWT_EXPIRES_IN`: 7d
+- `NODE_ENV`: production
+
 For detailed production deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### Quick Production Setup
