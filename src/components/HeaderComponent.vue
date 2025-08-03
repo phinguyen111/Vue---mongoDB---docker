@@ -1,142 +1,132 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light header-gradient sticky-top shadow-custom">
-    <div class="container-fluid">
-      <!-- Brand -->
-      <router-link class="navbar-brand d-flex align-items-center" to="/">
-        <i class="fas fa-book me-2 text-primary"></i>
-        <span class="fw-bold text-primary">
-          {{ translations[currentLanguage]?.digitalLibrary || "Library" }}
-        </span>
+  <header class="simple-header">
+    <div class="header-container">
+      <!-- Logo -->
+      <router-link class="logo" to="/">
+        <i class="fas fa-book"></i>
+        <span>{{ translations[currentLanguage]?.digitalLibrary || "Digital Library" }}</span>
       </router-link>
 
-      <!-- Mobile Toggle Button -->
-      <button 
-        class="navbar-toggler border-0" 
-        type="button" 
-        data-bs-toggle="collapse" 
-        data-bs-target="#navbarNav" 
-        aria-controls="navbarNav" 
-        aria-expanded="false" 
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <!-- Desktop Navigation -->
+      <nav class="nav-menu desktop-only">
+        <router-link class="nav-item" to="/">
+          {{ translations[currentLanguage]?.home || "Home" }}
+        </router-link>
+        <router-link 
+          v-if="currentUser"
+          class="nav-item" 
+          to="/favorites"
+        >
+          {{ translations[currentLanguage]?.favorites || "Favorites" }}
+        </router-link>
+        <router-link 
+          v-if="currentUser"
+          class="nav-item" 
+          to="/history"
+        >
+          {{ translations[currentLanguage]?.history || "History" }}
+        </router-link>
+        <router-link 
+          v-if="currentUser && currentUser.role === 'admin'"
+          class="nav-item" 
+          to="/admin"
+        >
+          {{ translations[currentLanguage]?.admin || "Admin" }}
+        </router-link>
+      </nav>
 
-      <!-- Collapsible Content -->
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Navigation Links -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <router-link
-              class="nav-link d-flex align-items-center"
-              :class="{ active: currentView === 'home' }"
-              to="/"
-            >
-              <i class="fas fa-home me-1"></i>
-              {{ translations[currentLanguage]?.home || "Home" }}
-            </router-link>
-          </li>
+      <!-- Right Side -->
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="language-switch">
+          <button
+            class="lang-btn"
+            :class="{ active: currentLanguage === 'vi' }"
+            @click="$emit('change-language', 'vi')"
+          >
+            VI
+          </button>
+          <button
+            class="lang-btn"
+            :class="{ active: currentLanguage === 'en' }"
+            @click="$emit('change-language', 'en')"
+          >
+            EN
+          </button>
+        </div>
 
-          <li v-if="currentUser" class="nav-item">
-            <router-link
-              class="nav-link d-flex align-items-center"
-              :class="{ active: currentView === 'favorites' }"
-              to="/favorites"
-            >
-              <i class="fas fa-heart me-1"></i>
-              {{ translations[currentLanguage]?.favorites || "Favorites" }}
-            </router-link>
-          </li>
-
-          <li v-if="currentUser" class="nav-item">
-            <router-link
-              class="nav-link d-flex align-items-center"
-              :class="{ active: currentView === 'history' }"
-              to="/history"
-            >
-              <i class="fas fa-history me-1"></i>
-              {{ translations[currentLanguage]?.history || "History" }}
-            </router-link>
-          </li>
-
-          <li v-if="currentUser && currentUser.role === 'admin'" class="nav-item">
-            <router-link
-              class="nav-link d-flex align-items-center"
-              :class="{ active: currentView === 'admin' }"
-              to="/admin"
-            >
-              <i class="fas fa-cog me-1"></i>
-              {{ translations[currentLanguage]?.admin || "Admin" }}
-            </router-link>
-          </li>
-        </ul>
-
-        <!-- Right Side Actions -->
-        <div class="d-flex align-items-center gap-3">
-          <!-- Language Switcher -->
-          <div class="btn-group" role="group" aria-label="Language switcher">
-            <button
-              type="button"
-              class="btn btn-sm"
-              :class="currentLanguage === 'vi' ? 'btn-primary' : 'btn-outline-primary'"
-              @click="$emit('change-language', 'vi')"
-            >
-              VI
+        <!-- User Menu or Auth Buttons -->
+        <div v-if="currentUser" class="user-section">
+          <div class="dropdown" @click="toggleUserMenu">
+            <button class="user-btn" :class="{ active: userMenuOpen }">
+              <i class="fas fa-user"></i>
+              {{ currentUser.name }}
+              <i class="fas fa-chevron-down" :class="{ rotated: userMenuOpen }"></i>
             </button>
-            <button
-              type="button"
-              class="btn btn-sm"
-              :class="currentLanguage === 'en' ? 'btn-primary' : 'btn-outline-primary'"
-              @click="$emit('change-language', 'en')"
-            >
-              EN
-            </button>
-          </div>
-
-          <!-- User Menu (Logged In) -->
-          <div v-if="currentUser" class="dropdown">
-            <button 
-              class="btn btn-outline-primary dropdown-toggle d-flex align-items-center" 
-              type="button" 
-              id="userDropdown" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false"
-            >
-              <i class="fas fa-user me-1"></i>
-              <span class="d-none d-md-inline">{{ currentUser.name }}</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <ul class="dropdown-menu" :class="{ show: userMenuOpen }">
               <li>
-                <router-link class="dropdown-item d-flex align-items-center" to="/profile">
-                  <i class="fas fa-user-circle me-2"></i>
+                <router-link class="dropdown-item" to="/profile" @click="closeUserMenu">
+                  <i class="fas fa-user-cog"></i>
                   {{ translations[currentLanguage]?.profile || "Profile" }}
                 </router-link>
               </li>
-              <li><hr class="dropdown-divider"></li>
               <li>
-                <button class="dropdown-item d-flex align-items-center text-danger" @click="$emit('logout')">
-                  <i class="fas fa-sign-out-alt me-2"></i>
+                <button class="dropdown-item" @click="handleLogout">
+                  <i class="fas fa-sign-out-alt"></i>
                   {{ translations[currentLanguage]?.logout || "Logout" }}
                 </button>
               </li>
             </ul>
           </div>
-
-          <!-- Auth Buttons (Not Logged In) -->
-          <div v-else class="d-flex gap-2">
-            <router-link class="btn btn-outline-primary btn-sm d-flex align-items-center" to="/login">
-              <i class="fas fa-sign-in-alt me-1"></i>
-              <span class="d-none d-sm-inline">{{ translations[currentLanguage]?.login || "Login" }}</span>
-            </router-link>
-            <router-link class="btn btn-primary btn-sm d-flex align-items-center" to="/register">
-              <i class="fas fa-user-plus me-1"></i>
-              <span class="d-none d-sm-inline">{{ translations[currentLanguage]?.register || "Register" }}</span>
-            </router-link>
-          </div>
         </div>
+        
+        <div v-else class="auth-section">
+          <router-link class="btn-login" to="/login">
+            {{ translations[currentLanguage]?.login || "Login" }}
+          </router-link>
+          <router-link class="btn-register" to="/register">
+            {{ translations[currentLanguage]?.register || "Register" }}
+          </router-link>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-toggle mobile-only" @click="toggleMobileMenu">
+          <i class="fas fa-bars"></i>
+        </button>
       </div>
     </div>
-  </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" :class="{ open: mobileMenuOpen }">
+      <router-link class="mobile-nav-item" to="/" @click="closeMobileMenu">
+        {{ translations[currentLanguage]?.home || "Home" }}
+      </router-link>
+      <router-link 
+        v-if="currentUser"
+        class="mobile-nav-item" 
+        to="/favorites" 
+        @click="closeMobileMenu"
+      >
+        {{ translations[currentLanguage]?.favorites || "Favorites" }}
+      </router-link>
+      <router-link 
+        v-if="currentUser"
+        class="mobile-nav-item" 
+        to="/history" 
+        @click="closeMobileMenu"
+      >
+        {{ translations[currentLanguage]?.history || "History" }}
+      </router-link>
+      <router-link 
+        v-if="currentUser && currentUser.role === 'admin'"
+        class="mobile-nav-item" 
+        to="/admin"
+        @click="closeMobileMenu"
+      >
+        {{ translations[currentLanguage]?.admin || "Admin" }}
+      </router-link>
+    </div>
+  </header>
 </template>
 
 <script>
@@ -149,195 +139,341 @@ export default {
     translations: Object,
   },
   emits: ["change-language", "logout"],
+  data() {
+    return {
+      mobileMenuOpen: false,
+      userMenuOpen: false,
+    };
+  },
+  methods: {
+    toggleMobileMenu() {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+    },
+    closeMobileMenu() {
+      this.mobileMenuOpen = false;
+    },
+    toggleUserMenu(event) {
+      event.stopPropagation();
+      this.userMenuOpen = !this.userMenuOpen;
+    },
+    closeUserMenu() {
+      this.userMenuOpen = false;
+    },
+    handleLogout() {
+      this.closeUserMenu();
+      this.$emit('logout');
+    },
+    handleClickOutside(event) {
+      if (!this.$el.contains(event.target)) {
+        this.closeUserMenu();
+        this.closeMobileMenu();
+      }
+    },
+  },
+  mounted() {
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
+  },
 };
 </script>
 
 <style scoped>
-/* Custom styles for Bootstrap navbar integration */
-
-/* Header gradient background */
-.header-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  transition: all 0.3s ease;
+/* Simple Header Styles */
+.simple-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-.header-gradient:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
 }
 
-/* Enhanced shadow */
-.shadow-custom {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
-/* Navbar brand customization */
-.navbar-brand {
-  font-size: 1.5rem;
-  text-decoration: none !important;
-  transition: all 0.2s ease;
+.logo i {
+  font-size: 1.2rem;
 }
 
-.navbar-brand:hover {
-  transform: scale(1.05);
+.logo:hover {
+  color: #f0f0f0;
 }
 
-/* Navigation links */
-.nav-link {
+/* Desktop Navigation */
+.nav-menu {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--text-secondary);
   font-weight: 500;
-  transition: all 0.2s ease;
-  border-radius: var(--radius-md);
-  margin: 0 0.25rem;
-  color: var(--text-secondary) !important;
-}
-
-.nav-link:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary) !important;
-  transform: translateY(-1px);
-}
-
-.nav-link.active {
-  background: var(--primary-color) !important;
-  color: white !important;
-  font-weight: 600;
-}
-
-/* Dropdown customizations */
-.dropdown-toggle::after {
-  margin-left: 0.5rem;
-}
-
-.dropdown-menu {
-  border: none;
-  box-shadow: var(--shadow-lg);
-  border-radius: var(--radius-lg);
   padding: 0.5rem 0;
-  margin-top: 0.5rem;
+  transition: color 0.2s;
 }
 
-.dropdown-item {
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
-  border-radius: var(--radius-md);
-  margin: 0 0.5rem;
-  width: calc(100% - 1rem);
+.nav-item:hover,
+.nav-item.router-link-active {
+  color: white;
 }
 
-.dropdown-item:hover {
-  background: var(--bg-tertiary);
-  transform: translateX(4px);
+.nav-item[href="/"] {
+  color: white;
 }
 
-.dropdown-divider {
-  margin: 0.5rem 0;
-  border-color: var(--border-light);
+.nav-item[href="/"]:hover {
+  color: #f0f0f0;
 }
 
-/* Button group for language switcher */
-.btn-group .btn {
-  border-radius: 0;
-  font-weight: 600;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-}
-
-.btn-group .btn:first-child {
-  border-radius: var(--radius-md) 0 0 var(--radius-md);
-}
-
-.btn-group .btn:last-child {
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 991.98px) {
-  .navbar-nav {
-    padding: 1rem 0;
-  }
-  
-  .nav-link {
-    padding: 0.75rem 1rem;
-    margin: 0.25rem 0;
-  }
-  
-  .d-flex.gap-3 {
-    flex-direction: column;
-    gap: 1rem !important;
-    align-items: stretch !important;
-    padding: 1rem 0;
-  }
-  
-  .btn-group {
-    justify-content: center;
-  }
-  
-  .dropdown {
-    width: 100%;
-  }
-  
-  .dropdown .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .navbar-brand {
-    font-size: 1.25rem;
-  }
-  
-  .d-none.d-sm-inline {
-    display: inline !important;
-  }
-}
-
-/* Custom animations */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.navbar-collapse.show {
-  animation: fadeInDown 0.3s ease;
-}
-
-/* Accessibility improvements */
-.navbar-toggler:focus {
-  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-}
-
-.btn:focus,
-.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-}
-
-/* Custom gap utility for older Bootstrap versions */
-.gap-3 {
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
   gap: 1rem;
 }
 
-.gap-2 {
+/* Language Switcher */
+.language-switch {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.lang-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* User Section */
+.user-section {
+  position: relative;
+}
+
+.user-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.user-btn:hover,
+.user-btn.active {
+  background: var(--bg-secondary);
+  border-color: var(--primary-color);
+}
+
+.user-btn .fa-chevron-down {
+  transition: transform 0.2s ease;
+  font-size: 0.7rem;
+}
+
+.user-btn .fa-chevron-down.rotated {
+  transform: rotate(180deg);
+}
+
+/* Auth Buttons */
+.auth-section {
+  display: flex;
   gap: 0.5rem;
 }
 
-/* Ensure proper text color inheritance */
-.text-danger {
-  color: var(--error-color) !important;
+.btn-login,
+.btn-register {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
-/* Smooth transitions for all interactive elements */
-.btn,
-.nav-link,
-.dropdown-item,
-.navbar-brand {
+.btn-login {
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-login:hover {
+  background: var(--bg-secondary);
+}
+
+.btn-register {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-register:hover {
+  background: var(--primary-dark);
+}
+
+/* Mobile Toggle */
+.mobile-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+/* Mobile Navigation */
+.mobile-nav {
+  display: none;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem;
+}
+
+.mobile-nav.open {
+  display: block;
+}
+
+.mobile-nav-item {
+  display: block;
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.router-link-active {
+  color: white;
+}
+
+.mobile-nav-item[href="/"] {
+  color: white;
+}
+
+.mobile-nav-item[href="/"]:hover {
+  color: #f0f0f0;
+}
+
+.mobile-nav-item:last-child {
+  border-bottom: none;
+}
+
+/* Responsive */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  .header-container {
+    padding: 0 0.5rem;
+  }
+  
+  .logo span {
+    display: none;
+  }
+  
+  .auth-section {
+    display: none;
+  }
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
   transition: all 0.2s ease;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  list-style: none;
+  padding: 0.5rem 0;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-secondary);
+  color: var(--primary-color);
+}
+
+.dropdown-item i {
+  font-size: 0.8rem;
+  width: 16px;
 }
 </style>

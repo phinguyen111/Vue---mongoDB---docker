@@ -50,19 +50,39 @@ export default {
     },
     handleLoginSuccess(user) {
       this.currentUser = user;
+      // Đảm bảo localStorage được cập nhật
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Redirect về trang chủ sau khi login thành công
+      this.$router.push('/');
+    },
+    // Kiểm tra và cập nhật trạng thái user
+    checkAuthState() {
+      const user = localStorage.getItem('currentUser');
+      const token = localStorage.getItem('authToken');
+      
+      if (user && token) {
+        this.currentUser = JSON.parse(user);
+      } else {
+        this.currentUser = null;
+      }
     },
   },
   mounted() {
-  const user = localStorage.getItem('currentUser');
-  if (user) {
-    this.currentUser = JSON.parse(user);
+    // Kiểm tra trạng thái đăng nhập
+    this.checkAuthState();
+    
+    // Khôi phục ngôn ngữ đã chọn
+    const lang = localStorage.getItem('language');
+    if (lang) {
+      this.currentLanguage = lang;
+    }
+  },
+  watch: {
+    // Theo dõi thay đổi route để cập nhật auth state
+    '$route'() {
+      this.checkAuthState();
+    }
   }
-
-  const lang = localStorage.getItem('language');
-  if (lang) {
-    this.currentLanguage = lang;
-  }
-}
 
 };
 </script>

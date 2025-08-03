@@ -529,7 +529,7 @@ export default {
 
 .header-left p {
   margin: 0;
-  color: #64748b;
+  color: #000000;
   font-size: 0.875rem;
 }
 
@@ -541,7 +541,7 @@ export default {
 
 .user-name {
   font-size: 0.875rem;
-  color: #64748b;
+  color: #000000;
 }
 
 .user-avatar {
@@ -572,7 +572,7 @@ export default {
   padding: 1rem 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #64748b;
+  color: #000000;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
@@ -644,7 +644,7 @@ export default {
 
 .stat-info p {
   margin: 0;
-  color: #64748b;
+  color: #000000;
   font-size: 0.875rem;
 }
 
@@ -696,7 +696,7 @@ export default {
 .action-card span {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #64748b;
+  color: #000000;
 }
 
 /* Section Headers */

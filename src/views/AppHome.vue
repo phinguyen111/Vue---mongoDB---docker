@@ -1054,7 +1054,7 @@ export default {
 
 .stat-description {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #000000;
   margin-top: 0.25rem;
   font-weight: 400;
 }
@@ -1206,7 +1206,7 @@ export default {
 }
 
 .search-icon {
-  color: #6b7280;
+  color: #000000;
   margin-right: 0.75rem;
   pointer-events: none;
 }
@@ -1223,7 +1223,7 @@ export default {
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: #666666;
   font-weight: 400;
 }
 
@@ -1236,7 +1236,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: #000000;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -1284,7 +1284,7 @@ export default {
 
 .suggestion-type {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #000000;
   background: #e5e7eb;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -1293,7 +1293,7 @@ export default {
 
 .search-help {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #000000;
   margin-top: 0.5rem;
   text-align: center;
 }
@@ -1362,7 +1362,7 @@ export default {
 
 .filters-toggle i {
   transition: transform 0.3s ease;
-  color: #6b7280;
+  color: #000000;
 }
 
 .filters-toggle i.rotated {
@@ -1451,7 +1451,7 @@ export default {
 .select-arrow {
   position: absolute;
   right: 1rem;
-  color: #6b7280;
+  color: #000000;
   pointer-events: none;
   font-size: 0.75rem;
   transition: color 0.2s ease;
@@ -1462,7 +1462,7 @@ export default {
 }
 
 .default-option {
-  color: #6b7280;
+  color: #000000;
   font-style: italic;
 }
 
@@ -1475,7 +1475,7 @@ export default {
 
 .filter-help {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #000000;
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -1483,7 +1483,7 @@ export default {
 }
 
 .filter-help i {
-  color: #9ca3af;
+  color: #666666;
   font-size: 0.625rem;
 }
 
@@ -1525,7 +1525,7 @@ export default {
 
 .reset-btn {
   background: #ffffff;
-  color: #6b7280;
+  color: #000000;
   border: 2px solid #e5e7eb;
 }
 

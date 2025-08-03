@@ -113,6 +113,14 @@ export default {
       errorMessage: ''
     }
   },
+  mounted() {
+    // Nếu user đã đăng nhập, redirect về trang chủ
+    const user = localStorage.getItem('currentUser');
+    const token = localStorage.getItem('authToken');
+    if (user && token) {
+      this.$router.push('/');
+    }
+  },
   methods: {
     async handleRegister() {
       if (this.isLoading) return;
@@ -267,7 +275,7 @@ export default {
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: #000000;
   font-size: 1rem;
   pointer-events: none;
 }
@@ -300,7 +308,7 @@ export default {
 }
 
 .modern-input::placeholder {
-  color: #9ca3af;
+  color: #666666;
   font-weight: 400;
 }
 
