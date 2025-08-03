@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AppHome from '@/views/AppHome.vue'
 import LoginPage from '@/views/LoginPage.vue'
 import RegisterPage from '@/views/RegisterPage.vue'
-import AdminPage from '@/views/AdminPage.vue'
+import AdminPage from '@/views/adminpage.vue'
 import TestHome from '@/views/TestHome.vue'
 
 // ✅ Định nghĩa các routes
