@@ -2184,10 +2184,12 @@ export default {
 
 .overlay-btn.secondary {
   background: rgba(255, 255, 255, 0.9);
+  color: #000000;
 }
 
 .overlay-btn.secondary:hover {
   background: #ffffff;
+  color: #000000;
 }
 
 .overlay-btn.favorited {

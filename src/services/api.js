@@ -1,5 +1,15 @@
-// ✅ Vite-compatible environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// ✅ Auto-detect environment and set appropriate API base URL
+const getApiBaseUrl = () => {
+  // In production (Vercel), use relative URLs to same domain
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  
+  // In development, use environment variable or default to localhost
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   constructor() {

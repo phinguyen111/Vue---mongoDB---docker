@@ -4,7 +4,8 @@ node_modules
 .env.development
 .env.production
 logs
-server
+server/scripts
+server/services
 *.log
 .git
 .gitignore
