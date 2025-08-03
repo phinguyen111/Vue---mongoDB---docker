@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Update Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Frontend Update Test</h1>
+    
+    <div class="test-section">
+        <h3>Authentication Test</h3>
+        <button onclick="testLogin()">Test Admin Login</button>
+        <div id="auth-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Book Update Test</h3>
+        <button onclick="testBookUpdate()">Test Book Update</button>
+        <div id="book-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>User Update Test</h3>
+        <button onclick="testUserUpdate()">Test User Update</button>
+        <div id="user-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    showResult('auth-result', '✅ Login successful! Token received.');
+                } else {
+                    showResult('auth-result', `❌ Login failed: ${data.message}`, false);
+                }
+            } catch (error) {
+                showResult('auth-result', `❌ Login error: ${error.message}`, false);
+            }
+        }
+
+        async function testBookUpdate() {
+            if (!authToken) {
+                showResult('book-result', '❌ Please login first!', false);
+                return;
+            }
+
+            try {
+                // First get books
+                const booksResponse = await fetch(`${API_BASE}/books`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const booksData = await booksResponse.json();
+                const books = Array.isArray(booksData) ? booksData : booksData.books || [];
+                
+                if (books.length === 0) {
+                    showResult('book-result', '❌ No books found to update!', false);
+                    return;
+                }
+
+                const bookToUpdate = books[0];
+                const updateData = {
+                    title: bookToUpdate.title + ' (Frontend Test)',
+                    author: bookToUpdate.author,
+                    category: bookToUpdate.category,
+                    language: bookToUpdate.language,
+                    description: bookToUpdate.description + ' - Frontend test update',
+                    price: bookToUpdate.price,
+                    stock: bookToUpdate.stock
+                };
+
+                const updateResponse = await fetch(`${API_BASE}/books/${bookToUpdate._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const updateResult = await updateResponse.json();
+                
+                if (updateResponse.ok) {
+                    showResult('book-result', `✅ Book updated successfully: ${updateResult.title || 'Success'}`);
+                } else {
+                    showResult('book-result', `❌ Book update failed: ${updateResult.message}`, false);
+                }
+            } catch (error) {
+                showResult('book-result', `❌ Book update error: ${error.message}`, false);
+            }
+        }
+
+        async function testUserUpdate() {
+            if (!authToken) {
+                showResult('user-result', '❌ Please login first!', false);
+                return;
+            }
+
+            try {
+                // First get users
+                const usersResponse = await fetch(`${API_BASE}/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const usersData = await usersResponse.json();
+                const users = Array.isArray(usersData) ? usersData : usersData.users || [];
+                
+                if (users.length === 0) {
+                    showResult('user-result', '❌ No users found to update!', false);
+                    return;
+                }
+
+                const userToUpdate = users.find(u => u.email !== 'admin@example.com');
+                if (!userToUpdate) {
+                    showResult('user-result', '❌ No non-admin users found to update!', false);
+                    return;
+                }
+
+                const updateData = {
+                    name: userToUpdate.name + ' (Frontend Test)',
+                    email: userToUpdate.email,
+                    role: userToUpdate.role,
+                    isActive: userToUpdate.isActive
+                };
+
+                const updateResponse = await fetch(`${API_BASE}/users/${userToUpdate._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const updateResult = await updateResponse.json();
+                
+                if (updateResponse.ok) {
+                    showResult('user-result', `✅ User updated successfully: ${updateResult.name || 'Success'}`);
+                } else {
+                    showResult('user-result', `❌ User update failed: ${updateResult.message}`, false);
+                }
+            } catch (error) {
+                showResult('user-result', `❌ User update error: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+</html>

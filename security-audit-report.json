@@ -1,0 +1,302 @@
+{
+  "timestamp": "2025-08-02T10:14:38.291Z",
+  "vulnerabilities": [
+    {
+      "category": "configuration",
+      "severity": "high",
+      "description": "Missing required environment variable: JWT_SECRET",
+      "timestamp": "2025-08-02T10:14:38.295Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "high",
+      "description": "Missing required environment variable: MONGODB_URI",
+      "timestamp": "2025-08-02T10:14:38.295Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "high",
+      "description": "Missing required environment variable: NODE_ENV",
+      "timestamp": "2025-08-02T10:14:38.295Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "high",
+      "description": "Missing required environment variable: BCRYPT_ROUNDS",
+      "timestamp": "2025-08-02T10:14:38.295Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "medium",
+      "description": "NODE_ENV should be set to either \"production\" or \"development\"",
+      "timestamp": "2025-08-02T10:14:38.296Z"
+    },
+    {
+      "category": "dependencies",
+      "severity": "medium",
+      "description": "Package axios may be outdated. Ensure version is < 0.21.2 or higher",
+      "timestamp": "2025-08-02T10:14:38.299Z"
+    },
+    {
+      "category": "dependencies",
+      "severity": "medium",
+      "description": "Package express may be outdated. Ensure version is < 4.17.3 or higher",
+      "timestamp": "2025-08-02T10:14:38.299Z"
+    },
+    {
+      "category": "dependencies",
+      "severity": "medium",
+      "description": "Package mongoose may be outdated. Ensure version is < 6.0.0 or higher",
+      "timestamp": "2025-08-02T10:14:38.299Z"
+    },
+    {
+      "category": "authentication",
+      "severity": "medium",
+      "description": "Bcrypt rounds (10) should be at least 12 for better security",
+      "timestamp": "2025-08-02T10:14:38.302Z"
+    },
+    {
+      "category": "authentication",
+      "severity": "medium",
+      "description": "JWT expiration time not configured",
+      "timestamp": "2025-08-02T10:14:38.302Z"
+    },
+    {
+      "category": "inputValidation",
+      "severity": "high",
+      "description": "No input validation middleware detected",
+      "timestamp": "2025-08-02T10:14:38.303Z"
+    },
+    {
+      "category": "inputValidation",
+      "severity": "medium",
+      "description": "Potential unvalidated query parameters in books.js",
+      "timestamp": "2025-08-02T10:14:38.304Z"
+    },
+    {
+      "category": "inputValidation",
+      "severity": "medium",
+      "description": "Potential unvalidated query parameters in users.js",
+      "timestamp": "2025-08-02T10:14:38.304Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "high",
+      "description": "CORS is not properly configured (allows all origins)",
+      "timestamp": "2025-08-02T10:14:38.306Z"
+    },
+    {
+      "category": "configuration",
+      "severity": "medium",
+      "description": "Security headers middleware (helmet) not detected",
+      "timestamp": "2025-08-02T10:14:38.306Z"
+    },
+    {
+      "category": "dataProtection",
+      "severity": "medium",
+      "description": "Weak random number generation (Math.random) in securityAudit.js",
+      "timestamp": "2025-08-02T10:14:38.311Z"
+    },
+    {
+      "category": "dataProtection",
+      "severity": "high",
+      "description": "Weak hash algorithm (MD5) detected in securityAudit.js",
+      "timestamp": "2025-08-02T10:14:38.312Z"
+    },
+    {
+      "category": "dataProtection",
+      "severity": "medium",
+      "description": "Weak random number generation (Math.random) in seedData.js",
+      "timestamp": "2025-08-02T10:14:38.312Z"
+    },
+    {
+      "category": "dataProtection",
+      "severity": "medium",
+      "description": "Weak random number generation (Math.random) in monitoringService.js",
+      "timestamp": "2025-08-02T10:14:38.313Z"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "action": "Strengthen authentication mechanisms",
+      "details": [
+        "Use strong JWT secrets (32+ characters)",
+        "Implement proper password hashing (bcrypt rounds >= 12)",
+        "Set appropriate JWT expiration times",
+        "Consider implementing 2FA"
+      ]
+    },
+    {
+      "priority": "high",
+      "action": "Improve security configuration",
+      "details": [
+        "Configure proper CORS settings",
+        "Use security headers (helmet)",
+        "Set appropriate file permissions",
+        "Use environment variables for sensitive data"
+      ]
+    },
+    {
+      "priority": "medium",
+      "action": "Implement security best practices",
+      "details": [
+        "Regular security audits",
+        "Dependency vulnerability scanning",
+        "Input validation and sanitization",
+        "Secure logging practices",
+        "Regular security training for developers"
+      ]
+    }
+  ],
+  "score": 0,
+  "categories": {
+    "authentication": {
+      "score": 84,
+      "issues": [
+        {
+          "category": "authentication",
+          "severity": "medium",
+          "description": "Bcrypt rounds (10) should be at least 12 for better security",
+          "timestamp": "2025-08-02T10:14:38.302Z"
+        },
+        {
+          "category": "authentication",
+          "severity": "medium",
+          "description": "JWT expiration time not configured",
+          "timestamp": "2025-08-02T10:14:38.302Z"
+        }
+      ]
+    },
+    "authorization": {
+      "score": 100,
+      "issues": []
+    },
+    "dataProtection": {
+      "score": 61,
+      "issues": [
+        {
+          "category": "dataProtection",
+          "severity": "medium",
+          "description": "Weak random number generation (Math.random) in securityAudit.js",
+          "timestamp": "2025-08-02T10:14:38.311Z"
+        },
+        {
+          "category": "dataProtection",
+          "severity": "high",
+          "description": "Weak hash algorithm (MD5) detected in securityAudit.js",
+          "timestamp": "2025-08-02T10:14:38.312Z"
+        },
+        {
+          "category": "dataProtection",
+          "severity": "medium",
+          "description": "Weak random number generation (Math.random) in seedData.js",
+          "timestamp": "2025-08-02T10:14:38.312Z"
+        },
+        {
+          "category": "dataProtection",
+          "severity": "medium",
+          "description": "Weak random number generation (Math.random) in monitoringService.js",
+          "timestamp": "2025-08-02T10:14:38.313Z"
+        }
+      ]
+    },
+    "inputValidation": {
+      "score": 69,
+      "issues": [
+        {
+          "category": "inputValidation",
+          "severity": "high",
+          "description": "No input validation middleware detected",
+          "timestamp": "2025-08-02T10:14:38.303Z"
+        },
+        {
+          "category": "inputValidation",
+          "severity": "medium",
+          "description": "Potential unvalidated query parameters in books.js",
+          "timestamp": "2025-08-02T10:14:38.304Z"
+        },
+        {
+          "category": "inputValidation",
+          "severity": "medium",
+          "description": "Potential unvalidated query parameters in users.js",
+          "timestamp": "2025-08-02T10:14:38.304Z"
+        }
+      ]
+    },
+    "configuration": {
+      "score": 9,
+      "issues": [
+        {
+          "category": "configuration",
+          "severity": "high",
+          "description": "Missing required environment variable: JWT_SECRET",
+          "timestamp": "2025-08-02T10:14:38.295Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "high",
+          "description": "Missing required environment variable: MONGODB_URI",
+          "timestamp": "2025-08-02T10:14:38.295Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "high",
+          "description": "Missing required environment variable: NODE_ENV",
+          "timestamp": "2025-08-02T10:14:38.295Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "high",
+          "description": "Missing required environment variable: BCRYPT_ROUNDS",
+          "timestamp": "2025-08-02T10:14:38.295Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "medium",
+          "description": "NODE_ENV should be set to either \"production\" or \"development\"",
+          "timestamp": "2025-08-02T10:14:38.296Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "high",
+          "description": "CORS is not properly configured (allows all origins)",
+          "timestamp": "2025-08-02T10:14:38.306Z"
+        },
+        {
+          "category": "configuration",
+          "severity": "medium",
+          "description": "Security headers middleware (helmet) not detected",
+          "timestamp": "2025-08-02T10:14:38.306Z"
+        }
+      ]
+    },
+    "dependencies": {
+      "score": 76,
+      "issues": [
+        {
+          "category": "dependencies",
+          "severity": "medium",
+          "description": "Package axios may be outdated. Ensure version is < 0.21.2 or higher",
+          "timestamp": "2025-08-02T10:14:38.299Z"
+        },
+        {
+          "category": "dependencies",
+          "severity": "medium",
+          "description": "Package express may be outdated. Ensure version is < 4.17.3 or higher",
+          "timestamp": "2025-08-02T10:14:38.299Z"
+        },
+        {
+          "category": "dependencies",
+          "severity": "medium",
+          "description": "Package mongoose may be outdated. Ensure version is < 6.0.0 or higher",
+          "timestamp": "2025-08-02T10:14:38.299Z"
+        }
+      ]
+    },
+    "logging": {
+      "score": 100,
+      "issues": []
+    }
+  }
+}

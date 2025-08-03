@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-08-02T10:14:40.110Z",
+  "database": {
+    "name": "digital_library",
+    "collections": 2,
+    "objects": 18,
+    "dataSize": 7786,
+    "storageSize": 73728,
+    "indexSize": 573440,
+    "avgObjSize": 432.55555555555554
+  },
+  "server": {
+    "version": "8.0.12",
+    "uptime": 233886,
+    "connections": {
+      "current": 2,
+      "available": 999998,
+      "totalCreated": 104,
+      "rejected": 0,
+      "active": 1,
+      "queuedForEstablishment": 0,
+      "establishmentRateLimit": {
+        "rejected": 0,
+        "exempted": 0,
+        "interruptedDueToClientDisconnect": 0
+      },
+      "threaded": 2,
+      "exhaustIsMaster": 0,
+      "exhaustHello": 0,
+      "awaitingTopologyChanges": 0,
+      "loadBalanced": 0
+    },
+    "memory": {
+      "bits": 64,
+      "resident": 46,
+      "virtual": 4835,
+      "supported": true,
+      "secureAllocByteCount": 0,
+      "secureAllocBytesInPages": 0
+    },
+    "opcounters": {
+      "insert": 23,
+      "query": 1352,
+      "update": 181,
+      "delete": 51,
+      "getmore": 0,
+      "command": 6163
+    }
+  },
+  "optimization": {
+    "indexes": [],
+    "queries": [],
+    "performance": {},
+    "recommendations": []
+  },
+  "recommendations": [
+    {
+      "type": "index",
+      "priority": "medium",
+      "message": "Index size is large relative to data size. Consider reviewing unused indexes."
+    }
+  ]
+}

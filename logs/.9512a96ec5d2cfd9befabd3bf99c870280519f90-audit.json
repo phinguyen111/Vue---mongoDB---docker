@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 90
+    },
+    "auditLog": "D:\\PhiNguyen\\Project\\nheii\\logs\\.9512a96ec5d2cfd9befabd3bf99c870280519f90-audit.json",
+    "files": [
+        {
+            "date": 1754129862678,
+            "name": "D:\\PhiNguyen\\Project\\nheii\\logs\\security-2025-08-02.log",
+            "hash": "956b56873b70b06a21de2eaf81af6996e86de2e9ab3fcf442f59b3238ec3e1c7"
+        }
+    ],
+    "hashType": "sha256"
+}

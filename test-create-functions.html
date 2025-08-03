@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Create Functions</title>
+</head>
+<body>
+    <h1>Test Create Functions</h1>
+    
+    <div>
+        <h2>Authentication Status</h2>
+        <p id="auth-status">Checking...</p>
+        <p id="user-info">Checking...</p>
+    </div>
+    
+    <div>
+        <h2>Test Create Book</h2>
+        <button onclick="testCreateBook()">Test Create Book</button>
+        <div id="book-result"></div>
+    </div>
+    
+    <div>
+        <h2>Test Create User</h2>
+        <button onclick="testCreateUser()">Test Create User</button>
+        <div id="user-result"></div>
+    </div>
+    
+    <script>
+        // Check authentication status
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('currentUser');
+            
+            document.getElementById('auth-status').textContent = token ? 'Authenticated' : 'Not authenticated';
+            document.getElementById('user-info').textContent = user ? `User: ${JSON.parse(user).name} (${JSON.parse(user).role})` : 'No user info';
+        }
+        
+        // Test create book
+        async function testCreateBook() {
+            const resultDiv = document.getElementById('book-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    resultDiv.innerHTML = '<p style="color: red;">No auth token found</p>';
+                    return;
+                }
+                
+                const bookData = {
+                    title: 'Test Book ' + Date.now(),
+                    author: 'Test Author',
+                    description: 'Test Description',
+                    category: 'Tiểu thuyết',
+                    year: 2024,
+                    isbn: '978-' + Date.now(),
+                    pages: 200,
+                    language: 'Vietnamese',
+                    publisher: 'Test Publisher'
+                };
+                
+                const response = await fetch('http://localhost:3000/api/books', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bookData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">Success: ${data.message}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Network Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Test create user
+        async function testCreateUser() {
+            const resultDiv = document.getElementById('user-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    resultDiv.innerHTML = '<p style="color: red;">No auth token found</p>';
+                    return;
+                }
+                
+                const userData = {
+                    name: 'Test User ' + Date.now(),
+                    email: `testuser${Date.now()}@example.com`,
+                    password: 'password123',
+                    role: 'user'
+                };
+                
+                const response = await fetch('http://localhost:3000/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p style="color: green;">Success: ${data.message}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Network Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Check auth on page load
+        checkAuth();
+    </script>
+</body>
+</html>
