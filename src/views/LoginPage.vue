@@ -132,6 +132,11 @@ export default {
           
           // Emit login success - App.vue sẽ xử lý redirect
           this.$emit("login-success", response.user);
+          
+          // Đảm bảo redirect về homepage
+          setTimeout(() => {
+            this.$router.push('/');
+          }, 100);
         } else {
           this.errorMessage = response.message || "Đăng nhập thất bại";
           createToast('error', 'Đăng nhập thất bại!');

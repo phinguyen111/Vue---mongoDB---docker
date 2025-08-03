@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../server/models/User');
@@ -20,6 +23,7 @@ let mockUsers = [
 const MOCK_JWT_SECRET = 'mock-jwt-secret-for-development-only';
 
 // Check if we're in mock mode (missing environment variables)
+// Updated: Force redeploy to fix Vercel deployment issues
 function isMockMode() {
   return !process.env.MONGODB_URI || !process.env.JWT_SECRET;
 }
@@ -119,14 +123,16 @@ async function handleRegister(req, res) {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Password will be hashed by User model pre-save middleware
+    console.log('🔍 Debug register:');
+    console.log('  Input password:', password);
+    console.log('  Password will be auto-hashed by User model');
 
     // Create new user
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password: password, // Will be auto-hashed by pre-save middleware
       role: 'user'
     });
 
@@ -225,7 +231,7 @@ async function handleLogin(req, res) {
     }
 
     // Production mode - use MongoDB
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(400).json({ 
         error: { 
@@ -236,8 +242,28 @@ async function handleLogin(req, res) {
     }
 
     // Check password
+    console.log('🔍 Debug login:');
+    console.log('  Input password:', password ? 'provided' : 'missing');
+    console.log('  Input password value:', password);
+    console.log('  User password hash:', user.password ? 'exists' : 'missing');
+    console.log('  User password value:', user.password);
+    console.log('  User object:', JSON.stringify(user, null, 2));
+    
+    if (!password) {
+      console.log('❌ Password is missing from request');
+      return res.status(400).json({ error: { code: '400', message: 'Password is required' } });
+    }
+    
+    if (!user.password) {
+      console.log('❌ User password hash is missing from database');
+      return res.status(500).json({ error: { code: '500', message: 'User password not found' } });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('🔍 bcrypt.compare result:', isMatch);
+    
     if (!isMatch) {
+      console.log('❌ Password comparison failed');
       return res.status(400).json({ 
         error: { 
           code: '400', 
@@ -245,6 +271,8 @@ async function handleLogin(req, res) {
         } 
       });
     }
+    
+    console.log('✅ Password comparison successful');
 
     // Update last login
     user.lastLogin = new Date();
@@ -308,9 +336,20 @@ module.exports = async function handler(req, res) {
   // Route based on URL path and method
   const { url, method } = req;
   
-  // Extract the action from query parameter or URL
+  // Extract the action from query parameter, body, or URL
   const urlObj = new URL(url, `http://${req.headers.host}`);
-  const action = urlObj.searchParams.get('action') || urlObj.pathname.split('/').pop();
+  const queryAction = urlObj.searchParams.get('action');
+  const bodyAction = req.body?.action;
+  const pathAction = urlObj.pathname.split('/').pop();
+  const action = queryAction || bodyAction || pathAction;
+  
+  console.log('🔍 Debug routing:');
+  console.log('  URL:', url);
+  console.log('  Method:', method);
+  console.log('  Query action:', queryAction);
+  console.log('  Body action:', bodyAction);
+  console.log('  Path action:', pathAction);
+  console.log('  Final action:', action);
   
   if ((action === 'register' || url.includes('/register')) && method === 'POST') {
     return handleRegister(req, res);

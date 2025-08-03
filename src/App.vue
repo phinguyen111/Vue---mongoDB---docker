@@ -53,7 +53,9 @@ export default {
       // Đảm bảo localStorage được cập nhật
       localStorage.setItem('currentUser', JSON.stringify(user));
       // Redirect về trang chủ sau khi login thành công
-      this.$router.push('/');
+      this.$nextTick(() => {
+        this.$router.push('/');
+      });
     },
     // Kiểm tra và cập nhật trạng thái user
     checkAuthState() {

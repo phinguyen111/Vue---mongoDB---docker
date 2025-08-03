@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const User = require('../server/models/User');
 const connectDB = require('../server/config/database');
 const { authMiddleware } = require('../server/middleware/auth');

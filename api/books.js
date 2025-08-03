@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const Book = require('../server/models/BookModel');
 const connectDB = require('../server/config/database');
 const { authMiddleware } = require('../server/middleware/auth');
@@ -31,7 +34,7 @@ async function getAllBooks(req, res) {
       sortOrder = 'asc',
       page = 1,
       limit = 10
-    } = req.query;
+    } = req.query || {};
 
     // Build query
     let query = { isActive: true };
@@ -176,6 +179,35 @@ async function deleteBook(req, res) {
   }
 }
 
+// Get categories
+async function getCategories(req, res) {
+  try {
+    const categories = await Book.distinct('category');
+    
+    if (!categories || categories.length === 0) {
+      return res.json({
+        success: true,
+        categories: []
+      });
+    }
+    
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (category) => {
+        const count = await Book.countDocuments({ category, isActive: true });
+        return { name: category, count };
+      })
+    );
+    
+    res.json({
+      success: true,
+      categories: categoriesWithCount
+    });
+  } catch (error) {
+    console.error('Error getting categories:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
 // Main handler for Vercel
 module.exports = async function handler(req, res) {
   // Set CORS headers
@@ -193,10 +225,15 @@ module.exports = async function handler(req, res) {
   
   // Parse URL to handle both /api/books and direct /books patterns
   const urlPath = url.replace(/^.*\/api/, '') || url;
-  const bookIdMatch = urlPath.match(/^\/books\/([^/?]+)/) || url.match(/\/books\/([^/?]+)/);
-  const isRootBooks = urlPath === '/books' || url.includes('/api/books') && !bookIdMatch;
   
-  if (isRootBooks && method === 'GET') {
+  // Check for specific endpoints first before generic patterns
+  const isCategoriesEndpoint = urlPath === '/books/categories' || url.includes('/books/categories');
+  const isRootBooks = urlPath === '/books' || (url.includes('/api/books') && !url.includes('/books/'));
+  const bookIdMatch = !isCategoriesEndpoint && (urlPath.match(/^\/books\/([^\/?]+)/) || url.match(/\/books\/([^\/?]+)/));
+  
+  if (isCategoriesEndpoint && method === 'GET') {
+    return getCategories(req, res);
+  } else if (isRootBooks && method === 'GET') {
     return getAllBooks(req, res);
   } else if (isRootBooks && method === 'POST') {
     // Apply auth middleware for admin operations

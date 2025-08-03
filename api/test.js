@@ -2,6 +2,9 @@
 // This is a temporary endpoint for debugging
 // Remove after confirming environment variables are working
 
+// Load environment variables
+require('dotenv').config();
+
 module.exports = function handler(req, res) {
   // Set CORS headers
   const allowedOrigins = [

@@ -139,7 +139,7 @@ class BookService {
   async getCategories() {
     if (this.useApi) {
       try {
-        const response = await this.apiService.get('/categories');
+        const response = await this.apiService.get('/books/categories');
         return response.data || response.categories || categories;
       } catch (error) {
         console.warn('API call failed, falling back to mock data:', error);
