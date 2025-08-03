@@ -96,11 +96,7 @@ For production deployment, set these in Vercel dashboard:
    - Environment: Production, Preview, Development (check all)
    - Click "Save"
    
-   **Third Variable:**
-   - Name: `NODE_ENV`
-   - Value: `production`
-   - Environment: Production only
-   - Click "Save"
+**Note:** `NODE_ENV` is already configured in vercel.json, so you only need to set the first two variables.
 
 **Important Notes:**
 - Replace `username`, `password`, and `cluster` in MONGODB_URI with your actual MongoDB Atlas credentials
@@ -120,9 +116,8 @@ This error occurs when:
 **Solution:**
 1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 2. Ensure these variables exist with exact names:
-   - `MONGODB_URI`
-   - `JWT_SECRET` 
-   - `NODE_ENV`
+    - `MONGODB_URI`
+    - `JWT_SECRET`
 3. Make sure they're enabled for the correct environments
 4. Redeploy after adding variables
 
