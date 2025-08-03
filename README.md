@@ -248,20 +248,20 @@ Authorization: Bearer <token>
 
 ### ✅ Vercel Deployment Status
 - **Live URL:** [https://vue-mongo-db-docker.vercel.app](https://vue-mongo-db-docker.vercel.app)
-- **API Status:** ✅ Hoạt động
+- **API Status:** ✅ Hoạt động (Books API: 463 records)
+- **Auth API:** ❌ HTTP 500 - Thiếu environment variables
 - **Missing:** MongoDB URI và JWT Secret
 
 ### 🔧 Setup Environment Variables
-1. Run the secret generator:
-   ```bash
-   node generate-vercel-secrets.js
-   ```
 
-2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-3. Select project: `vue-mongo-db-docker`
-4. Go to Settings > Environment Variables
-5. Add the generated variables
-6. Redeploy the project
+**📋 Chi tiết:** Xem [VERCEL_SETUP_GUIDE.md](./VERCEL_SETUP_GUIDE.md) để có hướng dẫn đầy đủ
+
+**⚡ Nhanh:**
+1. Run: `node generate-vercel-secrets.js`
+2. Tạo MongoDB Atlas database (miễn phí)
+3. Thêm environment variables vào [Vercel Dashboard](https://vercel.com/dashboard)
+4. Redeploy project
+5. Test: `node test-env-check.js`
 
 **Environment Variables needed:**
 - `MONGODB_URI`: MongoDB Atlas connection string ⚠️ **MISSING**
