@@ -1,5 +1,5 @@
 // ✅ Vite-compatible environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 class ApiService {
   constructor() {
@@ -8,6 +8,7 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    console.log('🔧 Making request to:', url);
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -23,19 +24,27 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
-
+      
       if (!response.ok) {
-        // Throw error với thông tin từ server
-        const error = new Error(data.message || 'API request failed');
+        let errorMessage = 'API request failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        
+        const error = new Error(errorMessage);
         error.status = response.status;
-        error.data = data;
         throw error;
       }
 
+      const data = await response.json();
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to server. Please check if the server is running.');
+      }
       throw error;
     }
   }

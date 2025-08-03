@@ -33,7 +33,7 @@ const sampleBooks = [
   {
     title: 'How to Win Friends and Influence People',
     author: 'Dale Carnegie',
-    category: 'Psychology',
+    category: 'Tâm lý học',
     year: 2018,
     description: 'A classic book on the art of communication and interpersonal skills.',
     isbn: '978-0-123456-78-9',
@@ -48,7 +48,7 @@ const sampleBooks = [
   {
     title: 'Sapiens: A Brief History of Humankind',
     author: 'Yuval Noah Harari',
-    category: 'History',
+    category: 'Lịch sử',
     year: 2020,
     description: 'The story of human evolution from prehistoric times to the modern era.',
     isbn: '978-0-123456-78-8',
@@ -63,7 +63,7 @@ const sampleBooks = [
   {
     title: 'I Am Gifted, So Are You!',
     author: 'Adam Khoo',
-    category: 'Self Development',
+    category: 'Kỹ năng sống',
     year: 2019,
     description: 'A guide to developing mindset and effective learning skills.',
     isbn: '978-0-123456-78-7',
@@ -78,7 +78,7 @@ const sampleBooks = [
   {
     title: 'The Alchemist',
     author: 'Paulo Coelho',
-    category: 'Fiction',
+    category: 'Tiểu thuyết',
     year: 2017,
     description: 'A story about the journey to find treasure and the meaning of life.',
     isbn: '978-0-123456-78-6',
@@ -93,7 +93,7 @@ const sampleBooks = [
   {
     title: 'Atomic Habits',
     author: 'James Clear',
-    category: 'Self Development',
+    category: 'Kỹ năng sống',
     year: 2021,
     description: 'A guide to building good habits and breaking bad ones.',
     isbn: '978-0-123456-78-5',
@@ -108,7 +108,7 @@ const sampleBooks = [
   {
     title: 'Thinking, Fast and Slow',
     author: 'Daniel Kahneman',
-    category: 'Psychology',
+    category: 'Tâm lý học',
     year: 2019,
     description: 'Exploring how the human mind works and makes decisions.',
     isbn: '978-0-123456-78-4',
@@ -123,7 +123,7 @@ const sampleBooks = [
   {
     title: 'The 7 Habits of Highly Effective People',
     author: 'Stephen R. Covey',
-    category: 'Self Development',
+    category: 'Kỹ năng sống',
     year: 2020,
     description: 'Seven habits of successful people.',
     isbn: '978-0-123456-78-3',
@@ -138,7 +138,7 @@ const sampleBooks = [
   {
     title: 'Clean Code',
     author: 'Robert C. Martin',
-    category: 'Technology',
+    category: 'Công nghệ',
     year: 2021,
     description: 'A guide to writing clean and maintainable code.',
     isbn: '978-0-123456-78-2',
