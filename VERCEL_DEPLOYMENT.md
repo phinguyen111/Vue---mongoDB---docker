@@ -13,7 +13,40 @@ The project is configured with:
 - `vercel.json` - Vercel deployment configuration
 - `.vercelignore` - Files to exclude from deployment
 
-### 3. Deploy to Vercel
+### 3. Quick Deployment Steps
+
+1. **Generate JWT Secret:**
+   ```bash
+   node generate-jwt-secret.js
+   ```
+   Copy the generated secret for step 2.
+
+2. **Set Environment Variables on Vercel Dashboard:**
+   - Go to https://vercel.com/dashboard
+   - Select your project (or import from GitHub if first time)
+   - Go to Settings → Environment Variables
+   - Add the three required variables (see detailed instructions below)
+
+3. **Deploy to Vercel:**
+   ```bash
+   # First time deployment
+   vercel --prod
+   
+   # Or if already linked
+   vercel deploy --prod
+   ```
+
+4. **Verify Environment Variables (Optional):**
+   After deployment, test the environment variables:
+   ```
+   https://your-app.vercel.app/api/test
+   ```
+   Should return `"status": "OK"` if all variables are set correctly.
+
+5. **Remove Test Endpoint (Recommended):**
+   After confirming everything works, delete `api/test.js` for security.
+
+### 4. Alternative Deployment Methods
 
 #### Option A: Via Vercel CLI
 ```bash
@@ -32,7 +65,7 @@ vercel --prod
 2. Connect repository to Vercel
 3. Vercel will automatically deploy on push to main branch
 
-### 4. Build Commands
+### 5. Build Commands
 - **Build Command**: `npm run build`
 - **Output Directory**: `dist`
 - **Install Command**: `npm install`
@@ -46,16 +79,28 @@ For production deployment, set these in Vercel dashboard:
 - `JWT_SECRET=your-super-secret-jwt-key-here`
 
 **How to set Environment Variables on Vercel:**
-1. Go to your project dashboard on Vercel
-2. Navigate to Settings → Environment Variables
-3. Add each variable:
-   - Variable Name: `MONGODB_URI`
-   - Value: Your MongoDB Atlas connection string
-   - Environment: Production (and Preview if needed)
+1. Go to your project dashboard on Vercel (https://vercel.com/dashboard)
+2. Select your project
+3. Navigate to Settings → Environment Variables
+4. Add each variable one by one:
+
+   **First Variable:**
+   - Name: `MONGODB_URI`
+   - Value: `mongodb+srv://username:password@cluster.mongodb.net/nheii?retryWrites=true&w=majority`
+   - Environment: Production, Preview, Development (check all)
+   - Click "Save"
    
-   - Variable Name: `JWT_SECRET`
-   - Value: A secure random string (at least 32 characters)
-   - Environment: Production (and Preview if needed)
+   **Second Variable:**
+   - Name: `JWT_SECRET`
+   - Value: A secure random string (generate using the script below)
+   - Environment: Production, Preview, Development (check all)
+   - Click "Save"
+   
+   **Third Variable:**
+   - Name: `NODE_ENV`
+   - Value: `production`
+   - Environment: Production only
+   - Click "Save"
 
 **Important Notes:**
 - Replace `username`, `password`, and `cluster` in MONGODB_URI with your actual MongoDB Atlas credentials
@@ -63,6 +108,39 @@ For production deployment, set these in Vercel dashboard:
 - Never commit these values to your repository
 
 ### 6. Troubleshooting
+
+#### Environment Variables Issues
+**Error: "Environment Variable 'MONGODB_URI' references Secret 'mongodb_uri', which does not exist."**
+
+This error occurs when:
+1. Environment variables are not set in Vercel dashboard
+2. Variable names don't match exactly
+3. Variables are set for wrong environment
+
+**Solution:**
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Ensure these variables exist with exact names:
+   - `MONGODB_URI`
+   - `JWT_SECRET` 
+   - `NODE_ENV`
+3. Make sure they're enabled for the correct environments
+4. Redeploy after adding variables
+
+**To verify variables are set:**
+```bash
+# Check via Vercel CLI
+vercel env ls
+
+# Or add a test endpoint to check (temporary)
+# In api/test.js:
+export default function handler(req, res) {
+  res.json({
+    hasMongoUri: !!process.env.MONGODB_URI,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    nodeEnv: process.env.NODE_ENV
+  });
+}
+```
 
 #### Common Issues:
 1. **"Could not resolve entry module index.html"**
