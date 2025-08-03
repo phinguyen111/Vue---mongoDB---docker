@@ -2,11 +2,21 @@ const Book = require('../server/models/BookModel');
 const connectDB = require('../server/config/database');
 const auth = require('../server/middleware/auth');
 
-// CORS helper function
+// CORS helper
 function setCorsHeaders(res) {
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'https://nheii.vercel.app',
+    'https://nheii-git-main-phingunens-projects.vercel.app',
+    'https://nheii-phingunens-projects.vercel.app'
+  ];
+  
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
 
 // Get all books with search, filter, and pagination
@@ -167,7 +177,7 @@ async function deleteBook(req, res) {
 }
 
 // Main handler for Vercel
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Set CORS headers
   setCorsHeaders(res);
   

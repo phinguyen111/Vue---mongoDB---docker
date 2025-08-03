@@ -2,11 +2,21 @@
 // This is a temporary endpoint for debugging
 // Remove after confirming environment variables are working
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // Set CORS headers
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'https://nheii.vercel.app',
+    'https://nheii-git-main-phingunens-projects.vercel.app',
+    'https://nheii-phingunens-projects.vercel.app'
+  ];
+  
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -39,4 +49,4 @@ export default function handler(req, res) {
       message: error.message
     });
   }
-}
+};
